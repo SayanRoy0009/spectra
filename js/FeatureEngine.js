@@ -1,3 +1,4 @@
+
 class FeatureEngine extends BaseProcessor {
   constructor() {
     super();
@@ -90,7 +91,7 @@ class FeatureEngine extends BaseProcessor {
       const lat = tags.gps.Latitude;
       const lng = tags.gps.Longitude;
 
-      // Ignore 0.0, 0.0 placeholders
+      // Filter out 0.0, 0.0 Null Island coordinates
       if (Math.abs(lat) < 0.00001 && Math.abs(lng) < 0.00001) {
         return null;
       }
