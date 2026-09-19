@@ -119,23 +119,25 @@
       <!-- Results Stage -->
       <section class="results-section hidden" id="resultsSection">
         
-        <!-- SIDE-BY-SIDE DUAL CARDS (Mobile Optimized) -->
+        <!-- SIDE-BY-SIDE DUAL CARDS -->
         <div class="verdict-dual-row">
           
-          <!-- LEFT CARD: Threat / Points Summary -->
+          <!-- LEFT CARD: Neutral Informative Summary -->
           <div class="glass-card verdict-summary-card" id="verdictSummaryCard">
             <div class="summary-icon-wrap" id="verdictIconContainer">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
               </svg>
             </div>
             <div class="summary-text-wrap">
-              <h3 id="verdictTitle">Your photo leaks 0 hidden data points</h3>
+              <h3 id="verdictTitle">Your photo <span class="leak-highlight">leaks 0</span> hidden data points</h3>
               <p id="verdictSubtitle">Scanning binary stream...</p>
             </div>
           </div>
 
-          <!-- RIGHT CARD: Location Status Button -->
+          <!-- RIGHT CARD: Location Action Button -->
           <a id="locationActionBtn" class="glass-card location-action-card loc-clean" href="#" target="_blank" rel="noopener noreferrer">
             <div class="loc-badge-head">
               <span class="loc-ping-indicator"></span>
@@ -280,7 +282,7 @@
 
         </div>
 
-        <!-- Map (Only shown if real GPS is found) -->
+        <!-- Map Section with Floating Google Maps Action Button -->
         <div class="glass-card geo-card hidden" id="geoCard">
           <div class="geo-card-header">
             <div class="geo-title">
@@ -289,10 +291,24 @@
             </div>
             <span class="geo-coords" id="geoCoords">0.0000, 0.0000</span>
           </div>
-          <div id="mapContainer" class="geo-map"></div>
+          <div class="geo-map-wrapper">
+            <div id="mapContainer" class="geo-map"></div>
+            <!-- Floating Google Maps Action Button -->
+            <a id="floatMapBtn" class="floating-map-btn" href="#" target="_blank" rel="noopener noreferrer" title="Open coordinates in Google Maps">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <span>Google Maps</span>
+              <svg class="ext-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="7" y1="17" x2="17" y2="7"></line>
+                <polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </a>
+          </div>
         </div>
 
-        <!-- Second Attribution Banner Above Button -->
+        <!-- Lower Author Attribution Banner -->
         <div class="creator-badge-wrap in-results">
           <a href="https://beacons.ai/sayan_roy0009" target="_blank" rel="noopener noreferrer" class="creator-pill">
             <span>Designed & Developed by <strong>Sayan Roy</strong></span>
@@ -304,32 +320,50 @@
           </a>
         </div>
 
-        <!-- Privacy Action Clean Button -->
+        <!-- Coordinated Dual Action Buttons -->
         <div class="action-dock">
-          <button class="btn-clean" id="btnScrubAll">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <!-- Primary Action: Transparent Cyber Green (Left-to-Right Beam) -->
+          <button class="action-btn btn-clean" id="btnScrubAll">
+            <span class="btn-beam beam-left-to-right"></span>
+            <svg class="action-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <path d="M9 12l2 2 4-4"/>
             </svg>
-            Scrub All Metadata & Download Clean
+            <span class="btn-clean-label">Scrub All Metadata & Download Clean</span>
           </button>
+
+          <!-- Secondary Action: Transparent Cyber Red Accordion (Right-to-Left Beam) -->
+          <details class="raw-accordion-wrapper" id="rawAccordion">
+            <summary class="action-btn btn-raw-toggle">
+              <span class="btn-beam beam-right-to-left"></span>
+              <div class="raw-btn-content">
+                <svg class="action-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/>
+                  <line x1="3" y1="15" x2="21" y2="15"/>
+                  <line x1="9" y1="3" x2="9" y2="21"/>
+                </svg>
+                <span>View Complete Raw EXIF Table</span>
+              </div>
+              <svg class="summary-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </summary>
+
+            <div class="table-scroll-container">
+              <table class="raw-table">
+                <thead>
+                  <tr>
+                    <th>Tag</th>
+                    <th>Extracted Value</th>
+                  </tr>
+                </thead>
+                <tbody id="rawTableBody"></tbody>
+              </table>
+            </div>
+          </details>
         </div>
 
-        <!-- Raw Accordion -->
-        <details class="glass-card raw-accordion">
-          <summary>View Complete Raw EXIF Table</summary>
-          <div class="table-scroll">
-            <table class="raw-table">
-              <thead>
-                <tr>
-                  <th>Tag</th>
-                  <th>Extracted Value</th>
-                </tr>
-              </thead>
-              <tbody id="rawTableBody"></tbody>
-            </table>
-          </div>
-        </details>
       </section>
     </main>
 
