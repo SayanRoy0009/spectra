@@ -1,4 +1,4 @@
-# Introducing SPECTRA a Forensic Privacy Lens
+# SPECTRA // Forensic Privacy Lens
 
 A high-performance, client side EXIF inspection and metadata sanitizer designed with an editorial, cyber forensic glassmorphism interface.
 

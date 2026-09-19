@@ -282,7 +282,7 @@
 
         </div>
 
-        <!-- Map Section with Floating Google Maps Action Button -->
+        <!-- Square-Aspect Map Section with Floating Dual Controls -->
         <div class="glass-card geo-card hidden" id="geoCard">
           <div class="geo-card-header">
             <div class="geo-title">
@@ -293,7 +293,8 @@
           </div>
           <div class="geo-map-wrapper">
             <div id="mapContainer" class="geo-map"></div>
-            <!-- Floating Google Maps Action Button -->
+            
+            <!-- Floating Google Maps Action Button (Top Right) -->
             <a id="floatMapBtn" class="floating-map-btn" href="#" target="_blank" rel="noopener noreferrer" title="Open coordinates in Google Maps">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -305,6 +306,25 @@
                 <polyline points="7 7 17 7 17 17"></polyline>
               </svg>
             </a>
+
+            <!-- Floating Dark / Light Mode Toggle Button (Bottom Right) -->
+            <button id="mapThemeToggle" class="floating-theme-btn" type="button" title="Toggle Map Dark / Light Mode">
+              <span class="theme-icon-wrap" id="mapThemeIcon">
+                <!-- Sun icon shown in Dark Mode -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="12" cy="12" r="5"></circle>
+                  <line x1="12" y1="1" x2="12" y2="3"></line>
+                  <line x1="12" y1="21" x2="12" y2="23"></line>
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                  <line x1="1" y1="12" x2="3" y2="12"></line>
+                  <line x1="21" y1="12" x2="23" y2="12"></line>
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+              </span>
+              <span class="theme-label" id="mapThemeLabel">Light Mode</span>
+            </button>
           </div>
         </div>
 

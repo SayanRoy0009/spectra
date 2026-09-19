@@ -49,12 +49,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const specLng = document.getElementById('specLng');
   const specAlt = document.getElementById('specAlt');
 
-  // Map Elements & Floating Button
+  // Map Elements & Dual Floating Controls
   const geoCard = document.getElementById('geoCard');
   const geoCoords = document.getElementById('geoCoords');
   const floatMapBtn = document.getElementById('floatMapBtn');
+  const mapThemeToggle = document.getElementById('mapThemeToggle');
+  const mapThemeIcon = document.getElementById('mapThemeIcon');
+  const mapThemeLabel = document.getElementById('mapThemeLabel');
+
   let mapInstance = null;
+  let mapTileLayer = null;
   let mapMarker = null;
+  let isMapDark = true; // Dark mode default
 
   // Buttons & Raw Table
   const btnScrubAll = document.getElementById('btnScrubAll');
@@ -174,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </svg>
     `;
 
-    // 4. Update the Left Summary Card (Only "leaks X" is highlighted in red)
+    // 4. Update the Left Summary Card
     if (data.totalCount > 0) {
       verdictTitle.innerHTML = `Your photo <span class="leak-highlight">leaks ${data.totalCount}</span> hidden data points`;
       verdictSubtitle.textContent = data.location
@@ -224,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         specAlt.classList.remove('highlight');
       }
 
-      // Show Map
+      // Show Map Section & Render Square Map
       geoCard.classList.remove('hidden');
       geoCoords.textContent = `${data.location.lat.toFixed(5)}, ${data.location.lng.toFixed(5)}`;
       renderLeafletMap(data.location.lat, data.location.lng);
@@ -261,14 +267,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Render Leaflet Map
   function renderLeafletMap(lat, lng) {
     setTimeout(() => {
       if (!mapInstance) {
         mapInstance = L.map('mapContainer', { attributionControl: false }).setView([lat, lng], 14);
         
-        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        mapTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
           maxZoom: 19,
-          className: 'map-tiles-dark'
+          className: isMapDark ? 'map-tiles-dark' : 'map-tiles-light'
         }).addTo(mapInstance);
 
         const pinIcon = L.divIcon({
@@ -286,6 +293,50 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, 150);
   }
+
+  // Floating Dark / Light Mode Toggle Button
+  mapThemeToggle.onclick = () => {
+    isMapDark = !isMapDark;
+
+    const sunSvg = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+    `;
+
+    const moonSvg = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    `;
+
+    if (isMapDark) {
+      mapThemeIcon.innerHTML = sunSvg;
+      mapThemeLabel.textContent = 'Light Mode';
+    } else {
+      mapThemeIcon.innerHTML = moonSvg;
+      mapThemeLabel.textContent = 'Dark Mode';
+    }
+
+    if (mapTileLayer && mapTileLayer.getContainer()) {
+      const container = mapTileLayer.getContainer();
+      if (isMapDark) {
+        container.classList.remove('map-tiles-light');
+        container.classList.add('map-tiles-dark');
+      } else {
+        container.classList.remove('map-tiles-dark');
+        container.classList.add('map-tiles-light');
+      }
+    }
+  };
 
   // Scrub All & Download Clean Photo
   btnScrubAll.onclick = async () => {
