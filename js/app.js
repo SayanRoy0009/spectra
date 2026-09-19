@@ -49,9 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const specLng = document.getElementById('specLng');
   const specAlt = document.getElementById('specAlt');
 
-  // Map Elements
+  // Map Elements & Floating Button
   const geoCard = document.getElementById('geoCard');
   const geoCoords = document.getElementById('geoCoords');
+  const floatMapBtn = document.getElementById('floatMapBtn');
   let mapInstance = null;
   let mapMarker = null;
 
@@ -127,7 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ];
 
       let i = 0;
-      // 5 stages × 500ms = exactly 2500ms (2.5 seconds)
       const interval = setInterval(() => {
         const step = stages[i];
         scanPct.textContent = `${step.pct}%`;
@@ -165,41 +165,24 @@ document.addEventListener('DOMContentLoaded', () => {
     specWB.textContent = data.cameraSettings.whiteBalance || '—';
     specExposureProgram.textContent = data.cameraSettings.exposureProgram || '—';
 
-    // SVGs
-    const svgPin = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-        <circle cx="12" cy="10" r="3"></circle>
-      </svg>`;
-    
-    const svgWarning = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-        <line x1="12" y1="9" x2="12" y2="13"></line>
-        <line x1="12" y1="17" x2="12.01" y2="17"></line>
-      </svg>`;
+    // High-Contrast Cyan Info (i) Icon
+    verdictIconContainer.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+    `;
 
-    const svgShieldClean = `
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-        <path d="M9 12l2 2 4-4"></path>
-      </svg>`;
-
-    // 4. Update the Left Summary Card
+    // 4. Update the Left Summary Card (Only "leaks X" is highlighted in red)
     if (data.totalCount > 0) {
-      verdictIconContainer.innerHTML = data.location ? svgPin : svgWarning;
-      verdictTitle.textContent = `Your photo leaks ${data.totalCount} hidden data points`;
+      verdictTitle.innerHTML = `Your photo <span class="leak-highlight">leaks ${data.totalCount}</span> hidden data points`;
       verdictSubtitle.textContent = data.location
         ? 'Precise GPS coordinates are embedded inside this photo.'
         : 'Hardware signatures and capture settings are fully exposed.';
-      verdictSummaryCard.style.borderColor = 'rgba(255, 51, 102, 0.35)';
-      verdictSummaryCard.style.background = 'rgba(255, 51, 102, 0.08)';
     } else {
-      verdictIconContainer.innerHTML = svgShieldClean;
-      verdictTitle.textContent = 'No EXIF metadata detected';
+      verdictTitle.innerHTML = 'No EXIF metadata detected';
       verdictSubtitle.textContent = 'This file is clean. No hardware or location tracking markers were found.';
-      verdictSummaryCard.style.borderColor = 'rgba(16, 185, 129, 0.35)';
-      verdictSummaryCard.style.background = 'rgba(16, 185, 129, 0.08)';
     }
 
     // 5. Update the Right Location Button Card
@@ -217,8 +200,15 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const lat = data.location.lat.toFixed(6);
       const lng = data.location.lng.toFixed(6);
-      locationActionBtn.href = `https://www.google.com/maps?q=${lat},${lng}`;
+      const gmapsUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+
+      locationActionBtn.href = gmapsUrl;
       locationActionBtn.title = 'Open coordinates in Google Maps';
+
+      // Update the floating button on the map
+      if (floatMapBtn) {
+        floatMapBtn.href = gmapsUrl;
+      }
 
       // Update Spec List
       specLat.textContent = lat;
@@ -246,6 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
       locationActionBtn.removeAttribute('href');
       locationActionBtn.title = 'No GPS location embedded';
 
+      if (floatMapBtn) {
+        floatMapBtn.removeAttribute('href');
+      }
+
       // Update Spec List
       specLat.textContent = 'Not Disclosed';
       specLng.textContent = 'Not Disclosed';
@@ -272,9 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!mapInstance) {
         mapInstance = L.map('mapContainer', { attributionControl: false }).setView([lat, lng], 14);
         
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
           maxZoom: 19,
-          subdomains: 'abcd',
           className: 'map-tiles-dark'
         }).addTo(mapInstance);
 
@@ -299,7 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!activeFile) return;
 
     btnScrubAll.disabled = true;
-    btnScrubAll.textContent = 'Scrubbing All Metadata...';
+    const labelSpan = btnScrubAll.querySelector('.btn-clean-label');
+    if (labelSpan) labelSpan.textContent = 'Scrubbing All Metadata...';
 
     try {
       const cleanBlob = await engine.scrubAll(activeFile);
@@ -310,13 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Error scrubbing metadata: ' + (err.message || String(err)));
     } finally {
       btnScrubAll.disabled = false;
-      btnScrubAll.innerHTML = `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <path d="M9 12l2 2 4-4"/>
-        </svg>
-        Scrub All Metadata & Download Clean
-      `;
+      if (labelSpan) labelSpan.textContent = 'Scrub All Metadata & Download Clean';
     }
   };
 });
