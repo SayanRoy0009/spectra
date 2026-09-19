@@ -1,3 +1,4 @@
+
 class BaseProcessor {
   readFileAsArrayBuffer(file) {
     return new Promise((resolve, reject) => {
