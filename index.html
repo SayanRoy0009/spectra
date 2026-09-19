@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#060709">
+  <title>SPECTRA — Forensic Privacy Lens</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <link rel="stylesheet" href="style.css">
+
+  <!-- External Libraries: ExifReader UMD + Leaflet -->
+  <script src="https://unpkg.com/exifreader@4.23.4/dist/exif-reader.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+  <div class="grid-overlay"></div>
+
+  <div class="app-wrapper">
+    <!-- Navbar -->
+    <header class="glass-nav">
+      <div class="brand">
+        <div class="radar-glyph">
+          <div class="radar-sweep"></div>
+        </div>
+        <div class="brand-text">
+          <span class="badge-audit">DEEP FORENSIC SCAN</span>
+          <span class="brand-title">SPECTRA</span>
+        </div>
+      </div>
+      <div class="status-pill">
+        <span class="pulse-dot"></span>
+        <span>100% Client-Side</span>
+      </div>
+    </header>
+
+    <!-- Top Author Attribution Banner -->
+    <div class="creator-badge-wrap">
+      <a href="https://beacons.ai/sayan_roy0009" target="_blank" rel="noopener noreferrer" class="creator-pill">
+        <span>Designed & Developed by <strong>Sayan Roy</strong></span>
+        <svg class="pill-link-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </a>
+    </div>
+
+    <main class="workspace">
+      <!-- Input Dropzone -->
+      <section class="drop-section" id="dropSection">
+        <div class="glass-card drop-card" id="dropZone">
+          <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp,image/heic,image/tiff" hidden />
+          
+          <div class="drop-content" id="dropContent">
+            <div class="scan-hologram">
+              <div class="hologram-ring"></div>
+              <svg class="hologram-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <h2>What is your photo leaking?</h2>
+            <p class="drop-hint">Tap or drag any raw capture to inspect embedded telemetry</p>
+          </div>
+
+          <!-- Preview Screen -->
+          <div class="preview-box hidden" id="previewBox">
+            <div class="preview-wrapper">
+              <img id="imagePreview" alt="Inspected Photo" />
+              <div class="scanline"></div>
+            </div>
+            <button class="btn-replace" id="btnReplace">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Choose Another Photo
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2.5 Second Forensic Cyber Scanning Terminal -->
+      <section class="scan-section hidden" id="scanSection">
+        <div class="glass-card scan-card">
+          <div class="terminal-header">
+            <div class="terminal-title">
+              <span class="terminal-spin"></span>
+              <span>INTERROGATING BINARY PAYLOAD</span>
+            </div>
+            <span class="scan-pct" id="scanPct">0%</span>
+          </div>
+
+          <div class="scanner-viz">
+            <div class="reticle-box">
+              <div class="corner tl"></div><div class="corner tr"></div>
+              <div class="corner bl"></div><div class="corner br"></div>
+              <div class="laser-beam"></div>
+            </div>
+          </div>
+
+          <div class="scan-logs" id="scanLogs">
+            <div class="log-line active">&gt; Initializing local memory sandbox...</div>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Stage -->
+      <section class="results-section hidden" id="resultsSection">
+        
+        <!-- SIDE-BY-SIDE DUAL CARDS (Mobile Optimized) -->
+        <div class="verdict-dual-row">
+          
+          <!-- LEFT CARD: Threat / Points Summary -->
+          <div class="glass-card verdict-summary-card" id="verdictSummaryCard">
+            <div class="summary-icon-wrap" id="verdictIconContainer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div class="summary-text-wrap">
+              <h3 id="verdictTitle">Your photo leaks 0 hidden data points</h3>
+              <p id="verdictSubtitle">Scanning binary stream...</p>
+            </div>
+          </div>
+
+          <!-- RIGHT CARD: Location Status Button -->
+          <a id="locationActionBtn" class="glass-card location-action-card loc-clean" href="#" target="_blank" rel="noopener noreferrer">
+            <div class="loc-badge-head">
+              <span class="loc-ping-indicator"></span>
+              <span class="loc-mini-tag">LOCATION</span>
+            </div>
+            <div class="loc-status-title" id="locStatusTitle">
+              <span>NOT FOUND</span>
+            </div>
+            <div class="loc-action-hint" id="locActionHint">
+              <span>Safe from tracking</span>
+            </div>
+          </a>
+
+        </div>
+
+        <!-- Categorized Spec Blocks -->
+        <div class="spec-blocks-container">
+          
+          <!-- 1. Device Block -->
+          <div class="glass-card spec-block">
+            <div class="block-header">
+              <svg class="block-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                <line x1="12" y1="18" x2="12.01" y2="18"/>
+              </svg>
+              <h4>Device</h4>
+            </div>
+            <div class="spec-list">
+              <div class="spec-row">
+                <span class="spec-key">Manufacturer:</span>
+                <span class="spec-val" id="specMake">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Model:</span>
+                <span class="spec-val highlight" id="specModel">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Software:</span>
+                <span class="spec-val" id="specSoftware">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Capture Block -->
+          <div class="glass-card spec-block">
+            <div class="block-header">
+              <svg class="block-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <h4>Capture</h4>
+            </div>
+            <div class="spec-list">
+              <div class="spec-row">
+                <span class="spec-key">Date/time:</span>
+                <span class="spec-val highlight" id="specDateTime">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Width:</span>
+                <span class="spec-val" id="specWidth">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Height:</span>
+                <span class="spec-val" id="specHeight">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Orientation:</span>
+                <span class="spec-val" id="specOrientation">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Camera Settings Block -->
+          <div class="glass-card spec-block">
+            <div class="block-header">
+              <svg class="block-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+              <h4>Camera Settings</h4>
+            </div>
+            <div class="spec-list">
+              <div class="spec-row">
+                <span class="spec-key">Aperture:</span>
+                <span class="spec-val" id="specAperture">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Shutter:</span>
+                <span class="spec-val" id="specShutter">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">ISO:</span>
+                <span class="spec-val" id="specISO">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Focal length:</span>
+                <span class="spec-val" id="specFocal">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">35mm equivalent:</span>
+                <span class="spec-val" id="spec35mm">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Flash:</span>
+                <span class="spec-val" id="specFlash">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">White balance:</span>
+                <span class="spec-val" id="specWB">—</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Exposure:</span>
+                <span class="spec-val" id="specExposureProgram">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Location Block -->
+          <div class="glass-card spec-block" id="locationBlock">
+            <div class="block-header">
+              <svg class="block-svg location-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              <h4>Location</h4>
+            </div>
+            <div class="spec-list">
+              <div class="spec-row">
+                <span class="spec-key">Latitude:</span>
+                <span class="spec-val" id="specLat">Not Disclosed</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Longitude:</span>
+                <span class="spec-val" id="specLng">Not Disclosed</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-key">Altitude:</span>
+                <span class="spec-val" id="specAlt">No altitude data recorded</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Map (Only shown if real GPS is found) -->
+        <div class="glass-card geo-card hidden" id="geoCard">
+          <div class="geo-card-header">
+            <div class="geo-title">
+              <span class="live-ping"></span>
+              <h4>SATELLITE POSITION PINPOINTED</h4>
+            </div>
+            <span class="geo-coords" id="geoCoords">0.0000, 0.0000</span>
+          </div>
+          <div id="mapContainer" class="geo-map"></div>
+        </div>
+
+        <!-- Second Attribution Banner Above Button -->
+        <div class="creator-badge-wrap in-results">
+          <a href="https://beacons.ai/sayan_roy0009" target="_blank" rel="noopener noreferrer" class="creator-pill">
+            <span>Designed & Developed by <strong>Sayan Roy</strong></span>
+            <svg class="pill-link-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+          </a>
+        </div>
+
+        <!-- Privacy Action Clean Button -->
+        <div class="action-dock">
+          <button class="btn-clean" id="btnScrubAll">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M9 12l2 2 4-4"/>
+            </svg>
+            Scrub All Metadata & Download Clean
+          </button>
+        </div>
+
+        <!-- Raw Accordion -->
+        <details class="glass-card raw-accordion">
+          <summary>View Complete Raw EXIF Table</summary>
+          <div class="table-scroll">
+            <table class="raw-table">
+              <thead>
+                <tr>
+                  <th>Tag</th>
+                  <th>Extracted Value</th>
+                </tr>
+              </thead>
+              <tbody id="rawTableBody"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </main>
+
+    <footer class="glass-footer">
+      <p>SPECTRA runs isolated within private browser memory. Zero files or coordinates are ever stored or uploaded.</p>
+    </footer>
+  </div>
+
+  <script src="js/BaseProcessor.js"></script>
+  <script src="js/FeatureEngine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
