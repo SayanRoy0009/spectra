@@ -92,8 +92,13 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   async function handleUpload(file) {
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file (JPEG, PNG, HEIC, TIFF).');
+    // Valid image extension & MIME regex
+    const validExts = /\.(jpe?g|png|webp|heic|heif|tiff?|dng)$/i;
+    const isImageMime = file.type && file.type.startsWith('image/');
+    const hasImageExt = validExts.test(file.name);
+
+    if (!isImageMime && !hasImageExt) {
+      alert('Please select an image file (JPEG, PNG, HEIC, TIFF, DNG).');
       return;
     }
 
