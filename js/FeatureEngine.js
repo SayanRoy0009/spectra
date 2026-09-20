@@ -86,33 +86,35 @@ class FeatureEngine extends BaseProcessor {
   }
 
   parseGps(tags) {
-    if (tags.gps && typeof tags.gps.Latitude === 'number' && typeof tags.gps.Longitude === 'number') {
-      const lat = tags.gps.Latitude;
-      const lng = tags.gps.Longitude;
+    if (!tags.gps) return null;
 
-      // Filter out 0.0, 0.0 Null Island coordinates
-      if (Math.abs(lat) < 0.00001 && Math.abs(lng) < 0.00001) {
-        return null;
-      }
+    // Resolve numeric values safely
+    const lat = Number(tags.gps.Latitude);
+    const lng = Number(tags.gps.Longitude);
 
-      let altStr = 'No altitude data recorded';
-      const rawVal = tags.gps.Altitude !== undefined && tags.gps.Altitude !== null
-        ? Number(tags.gps.Altitude)
-        : null;
+    const isValidLat = Number.isFinite(lat) && Math.abs(lat) > 0.00001 && Math.abs(lat) <= 90;
+    const isValidLng = Number.isFinite(lng) && Math.abs(lng) > 0.00001 && Math.abs(lng) <= 180;
 
-      if (rawVal !== null && !isNaN(rawVal) && Math.round(rawVal) !== 0) {
-        const rawAltMeters = Math.round(rawVal);
+    if (!isValidLat || !isValidLng) {
+      return null;
+    }
+
+    // Altitude validation
+    let altStr = 'No altitude data recorded';
+    if (tags.gps.Altitude !== undefined && tags.gps.Altitude !== null) {
+      const rawAlt = Number(tags.gps.Altitude);
+      if (Number.isFinite(rawAlt) && Math.abs(rawAlt) > 0.00001) {
+        const rawAltMeters = Math.round(rawAlt);
         const rawAltFeet = Math.round(rawAltMeters * 3.28084);
         altStr = `${rawAltMeters} m (${rawAltFeet} ft)`;
       }
-
-      return {
-        lat: lat,
-        lng: lng,
-        altitude: altStr
-      };
     }
-    return null;
+
+    return {
+      lat: lat,
+      lng: lng,
+      altitude: altStr
+    };
   }
 
   deduplicateTags(tags) {
